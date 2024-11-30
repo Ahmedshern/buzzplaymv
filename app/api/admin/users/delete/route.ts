@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = cookies();
-    const adminLoggedIn = (await cookieStore).get('adminLoggedIn')?.value;
+    const adminLoggedIn = cookieStore.get('adminLoggedIn')?.value;
     
     if (!adminLoggedIn || adminLoggedIn !== 'true') {
       return NextResponse.json(
@@ -42,8 +42,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Found user document:', userDoc.data());
-
     // Delete from Firestore first
     console.log('Deleting from Firestore...');
     try {
@@ -56,22 +54,18 @@ export async function POST(request: NextRequest) {
           batch.delete(doc.ref);
         });
         await batch.commit();
-        console.log('Deleted receipts subcollection');
       }
 
       // Delete user document
       await userRef.delete();
-      console.log('Successfully deleted user document from Firestore');
     } catch (error) {
       console.error('Error deleting from Firestore:', error);
       throw error;
     }
 
     // Delete from Firebase Auth
-    console.log('Deleting from Firebase Auth...');
     try {
       await getAuth().deleteUser(userId);
-      console.log('Successfully deleted from Firebase Auth');
     } catch (error: any) {
       // Continue if user not found in Auth
       if (error.code !== 'auth/user-not-found') {
@@ -80,16 +74,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete from Emby
-    console.log('Deleting from Emby...');
     try {
       await EmbyService.deleteUser(embyUserId);
-      console.log('Successfully deleted from Emby');
     } catch (error) {
       // Log but continue if Emby deletion fails
       console.error('Error deleting from Emby:', error);
     }
 
-    console.log('User deletion completed');
     return NextResponse.json({ 
       success: true,
       message: 'User deleted successfully'
