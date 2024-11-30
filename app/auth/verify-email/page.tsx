@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from 'sonner';
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function VerifyEmailPage() {
   const [verifying, setVerifying] = useState(true);
@@ -31,8 +33,23 @@ export default function VerifyEmailPage() {
     try {
       const auth = getAuth();
       await applyActionCode(auth, code);
+
+      // Get the current user
+      const user = auth.currentUser;
+      if (user) {
+        // Reload the user to get updated emailVerified status
+        await user.reload();
+        
+        // Update Firestore
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          emailVerified: true,
+          emailVerifiedAt: serverTimestamp()
+        });
+      }
+
       toast.success('Email verified successfully!');
-      // Redirect to dashboard or home after short delay
+      // Redirect to dashboard after short delay
       setTimeout(() => router.push('/dashboard'), 2000);
     } catch (error: any) {
       console.error('Verification error:', error);
