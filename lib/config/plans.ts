@@ -47,7 +47,7 @@ export const plans = [
       "Watch on 3 Devices Simultaneously",
       "Full HD Streaming",
       "Personalized Watchlist",
-      "Offline Viewing",
+      
       
     ],
     deviceLimit: 3,
@@ -67,7 +67,7 @@ export const plans = [
       "Watch on 4 Devices Simultaneously",
       "Full HD Streaming",
       "Personalized Watchlist",
-      "Offline Viewing",
+      
       
     ],
     deviceLimit: 4,

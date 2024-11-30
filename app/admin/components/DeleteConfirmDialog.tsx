@@ -27,22 +27,35 @@ export function DeleteConfirmDialog({
   loading,
 }: DeleteConfirmDialogProps) {
   return (
-    <AlertDialog open={!!user} onOpenChange={() => !loading && onClose()}>
+    <AlertDialog open={!!user} onOpenChange={() => onClose()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-          <AlertDialogDescription className="text-muted-foreground">
-            This will permanently delete the user {user?.email} from both Firebase and Emby.
-            This action cannot be undone.
+          <AlertDialogTitle>Delete User</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete this user? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <div className="space-y-4">
+          {user && (
+            <div className="text-sm">
+              <p><strong>Email:</strong> {user.email}</p>
+              <p><strong>Plan:</strong> {user.plan}</p>
+            </div>
+          )}
+        </div>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose} disabled={loading}>
+          <AlertDialogCancel onClick={() => onClose()}>
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} disabled={loading}>
-            {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Delete
+          <AlertDialogAction onClick={() => onConfirm()} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              'Delete'
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

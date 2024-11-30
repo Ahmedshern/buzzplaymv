@@ -12,6 +12,7 @@ import {
   ReceiptsDialog,
   DeleteConfirmDialog,
 } from './index';
+import { toast } from 'sonner';
 
 export default function AdminDashboard() {
   const { users, loading, actionLoading, fetchUsers, toggleAccess, deleteUser } = useUsers();
@@ -52,6 +53,30 @@ export default function AdminDashboard() {
         .filter((plan): plan is string => Boolean(plan))
     )
   );
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete user');
+      }
+
+      // Refresh the users list or update UI
+      // ... your existing code ...
+
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      // Show error message to user
+      toast.error('Failed to delete user');
+    }
+  };
 
   if (loading) {
     return (

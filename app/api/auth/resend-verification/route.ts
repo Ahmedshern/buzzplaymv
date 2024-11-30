@@ -23,27 +23,26 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate email verification link with correct settings
+    // Create action code settings
     const actionCodeSettings = {
-      url: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action`,
-      handleCodeInApp: false,
-      continueUrl: `${process.env.NEXT_PUBLIC_APP_URL}/auth/action?email=${encodeURIComponent(email)}`
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?email=${email}`,
+      handleCodeInApp: true
     };
 
-    const verificationLink = await getAuth().generateEmailVerificationLink(
-      email,
+    // Reset email verification status
+    await getAuth().updateUser(userRecord.uid, {
+      emailVerified: false
+    });
+
+    // Generate and send verification email
+    const link = await getAuth().generateEmailVerificationLink(
+      email, 
       actionCodeSettings
     );
 
-    // Here you would typically send the email using your email service
-    // For development, we'll return the link
-    console.log('Generated verification link:', verificationLink);
-
     return NextResponse.json({ 
       success: true,
-      message: "Verification email sent successfully",
-      // Only include verificationLink in development
-      ...(process.env.NODE_ENV === 'development' && { verificationLink })
+      message: "Verification email sent successfully"
     });
   } catch (error: any) {
     console.error('Error sending verification email:', error);

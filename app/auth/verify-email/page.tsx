@@ -2,100 +2,134 @@
 
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { applyActionCode, sendEmailVerification } from "firebase/auth";
+import { applyActionCode, sendEmailVerification, getAuth } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { toast } from 'sonner';
 
 export default function VerifyEmailPage() {
   const [verifying, setVerifying] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+  const [loading, setLoading] = useState(false);
+  const email = searchParams.get('email');
+  const oobCode = searchParams.get('oobCode');
+
   useEffect(() => {
-    async function verifyEmail() {
-      try {
-        // Get all URL parameters
-        const params = new URLSearchParams(window.location.search);
-        const oobCode = params.get('oobCode');
-        const mode = params.get('mode');
-
-        if (!oobCode || mode !== 'verifyEmail') {
-          setError("Invalid verification link. Please request a new one.");
-          setVerifying(false);
-          return;
-        }
-
-        console.log('Starting verification process...');
-        await applyActionCode(auth, oobCode);
-        
-        // Reload the user to update the emailVerified property
-        if (auth.currentUser) {
-          await auth.currentUser.reload();
-        }
-        
-        // Wait briefly to show success state before redirecting
-        setTimeout(() => {
-          router.push("/login?verified=true");
-        }, 2000);
-      } catch (error: any) {
-        console.error("Email verification error:", error);
-        setError(
-          error.code === 'auth/invalid-action-code'
-            ? "This verification link has expired or already been used."
-            : "Failed to verify email. Please try again."
-        );
-      } finally {
-        setVerifying(false);
-      }
+    if (oobCode) {
+      verifyEmail(oobCode);
+    } else {
+      setVerifying(false);
     }
+  }, [oobCode]);
 
-    verifyEmail();
-  }, [router]);
+  const verifyEmail = async (code: string) => {
+    try {
+      const auth = getAuth();
+      await applyActionCode(auth, code);
+      toast.success('Email verified successfully!');
+      // Redirect to dashboard or home after short delay
+      setTimeout(() => router.push('/dashboard'), 2000);
+    } catch (error: any) {
+      console.error('Verification error:', error);
+      setError(error.message);
+      setVerifying(false);
+    }
+  };
 
-  if (verifying) {
-    return (
-      <div className="container flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <p>Verifying your email...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleResendVerification = async () => {
+    if (!email) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-  if (error) {
-    return (
-      <div className="container flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Verification Failed</CardTitle>
-            <CardDescription className="text-center">
-              {error}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <Link href="/login">
-              <Button>Return to Login</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to resend verification');
+      }
+
+      toast.success('New verification email sent! Please check your inbox.');
+    } catch (error) {
+      console.error('Error resending verification:', error);
+      toast.error('Failed to send verification email');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="container flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Email Verified!</CardTitle>
+          <CardTitle className="text-2xl text-center">
+            {verifying ? "Verifying Email" : error ? "Action Failed" : "Email Verified!"}
+          </CardTitle>
           <CardDescription className="text-center">
-            Your email has been successfully verified. Redirecting to login...
+            {verifying ? (
+              "Please wait while we verify your email..."
+            ) : error ? (
+              "This link has expired or already been used."
+            ) : (
+              "Your email has been successfully verified. Redirecting to login..."
+            )}
           </CardDescription>
         </CardHeader>
+        <CardContent className="flex flex-col items-center gap-4">
+          {error && email && (
+            <>
+              <Button 
+                onClick={handleResendVerification}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Resend Verification Link'
+                )}
+              </Button>
+              
+              <div className="w-full mt-6 text-sm">
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+                  <h3 className="font-medium text-yellow-500 mb-2">
+                    Important: After requesting a new link
+                  </h3>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li className="flex items-center">
+                      <span className="mr-2 text-yellow-500">•</span>
+                      Check your email inbox
+                    </li>
+                    <li className="flex items-center">
+                      <span className="mr-2 text-yellow-500">•</span>
+                      Look in your spam/junk folder
+                    </li>
+                    <li className="flex items-center">
+                      <span className="mr-2 text-yellow-500">•</span>
+                      Allow a few minutes for delivery
+                    </li>
+                  </ul>
+                  <div className="mt-3 pt-3 border-t border-yellow-500/10 text-xs text-muted-foreground">
+                    Still having trouble? Contact our support team for assistance.
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
       </Card>
     </div>
   );

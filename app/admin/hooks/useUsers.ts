@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { EmbyService } from '@/lib/services/emby';
@@ -12,10 +12,14 @@ export function useUsers() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      // First verify admin session
+      console.log('Fetching users...');
       const response = await fetch('/api/admin/users', {
         method: 'GET',
         credentials: 'include',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
 
       if (!response.ok) {
@@ -23,6 +27,7 @@ export function useUsers() {
       }
 
       const { users: usersData } = await response.json();
+      console.log('Received users data:', usersData);
       setUsers(usersData);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -35,6 +40,14 @@ export function useUsers() {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchUsers();
+
+    const intervalId = setInterval(fetchUsers, 30000);
+
+    return () => clearInterval(intervalId);
+  }, [fetchUsers]);
 
   const toggleAccess = useCallback(async (userId: string, embyUserId: string, currentStatus: string) => {
     setActionLoading(userId);
@@ -64,28 +77,38 @@ export function useUsers() {
     }
   }, [fetchUsers]);
 
-  const deleteUser = useCallback(async (userId: string, embyUserId: string) => {
+  const deleteUser = async (userId: string, embyUserId: string) => {
     setActionLoading(userId);
     try {
+      console.log('Attempting to delete user:', { userId, embyUserId });
+      
       const response = await fetch('/api/admin/users/delete', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
         body: JSON.stringify({ userId, embyUserId }),
         credentials: 'include',
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete user');
+        throw new Error(data.error || 'Failed to delete user');
       }
 
-      setUsers(users => users.filter(user => user.id !== userId));
+      await fetchUsers();
+      
       toast({
         title: "Success",
         description: "User deleted successfully"
       });
+
+      return true;
     } catch (error: any) {
-      console.error("Delete error:", error);
+      console.error('Error in deleteUser:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -95,7 +118,7 @@ export function useUsers() {
     } finally {
       setActionLoading(null);
     }
-  }, []);
+  };
 
   return {
     users,

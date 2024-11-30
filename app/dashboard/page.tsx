@@ -127,14 +127,14 @@ export default function DashboardPage() {
                       <p className="text-sm flex items-center justify-between">
                         <span>
                           <span className="font-medium">Host:</span>{" "}
-                          <span className="text-muted-foreground">https://www.buzzplaymv.com</span>
+                          <span className="text-muted-foreground">https://emby.buzzplaymv.com</span>
                         </span>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => {
-                            navigator.clipboard.writeText("https://www.buzzplaymv.com");
+                            navigator.clipboard.writeText("https://emby.buzzplaymv.com");
                             toast({
                               description: "Host URL copied to clipboard",
                               duration: 2000,
@@ -147,14 +147,14 @@ export default function DashboardPage() {
                       <p className="text-sm flex items-center justify-between">
                         <span>
                           <span className="font-medium">Port:</span>{" "}
-                          <span className="text-muted-foreground">123</span>
+                          <span className="text-muted-foreground">443</span>
                         </span>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => {
-                            navigator.clipboard.writeText("123");
+                            navigator.clipboard.writeText("443");
                             toast({
                               description: "Port number copied to clipboard",
                               duration: 2000,
