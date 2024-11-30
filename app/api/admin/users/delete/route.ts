@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const adminLoggedIn = cookieStore.get('adminLoggedIn')?.value;
     
     if (!adminLoggedIn || adminLoggedIn !== 'true') {
