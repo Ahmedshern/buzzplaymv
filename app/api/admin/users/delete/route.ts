@@ -4,12 +4,9 @@ import { getAuth } from 'firebase-admin/auth';
 import { adminDb } from '@/lib/firebase-admin';
 import { cookies } from 'next/headers';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const adminLoggedIn = cookieStore.get('adminLoggedIn')?.value;
     
     if (!adminLoggedIn || adminLoggedIn !== 'true') {
@@ -30,12 +27,10 @@ export async function POST(request: NextRequest) {
     }
 
     // First verify the user exists in Firestore
-    console.log('Checking user in Firestore:', userId);
     const userRef = adminDb.collection('users').doc(userId);
     const userDoc = await userRef.get();
     
     if (!userDoc.exists) {
-      console.log('User document not found in Firestore');
       return NextResponse.json(
         { error: 'User not found in database' },
         { status: 404 }
@@ -43,7 +38,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete from Firestore first
-    console.log('Deleting from Firestore...');
     try {
       // Delete receipts subcollection
       const receiptsSnapshot = await userRef.collection('receipts').get();
@@ -96,6 +90,6 @@ export async function POST(request: NextRequest) {
 }
 
 // Add OPTIONS handler for CORS
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return NextResponse.json({}, { status: 200 });
 } 

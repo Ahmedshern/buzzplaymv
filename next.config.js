@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    serverActions: true,
+  },
+  
   env: {
     NEXT_PUBLIC_EMBY_URL: process.env.NEXT_PUBLIC_EMBY_URL,
     NEXT_PUBLIC_EMBY_API_KEY: process.env.NEXT_PUBLIC_EMBY_API_KEY,
