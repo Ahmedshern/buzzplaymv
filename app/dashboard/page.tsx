@@ -127,14 +127,14 @@ export default function DashboardPage() {
                       <p className="text-sm flex items-center justify-between">
                         <span>
                           <span className="font-medium">Host:</span>{" "}
-                          <span className="text-muted-foreground">https://emby.buzzplaymv.com</span>
+                          <span className="text-muted-foreground">https://s1.buzzplaymv.com</span>
                         </span>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => {
-                            navigator.clipboard.writeText("https://emby.buzzplaymv.com");
+                            navigator.clipboard.writeText("https://s1.buzzplaymv.com");
                             toast({
                               description: "Host URL copied to clipboard",
                               duration: 2000,
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                   </Link>
                 </Button>
                 <Button className="w-full bg-lime-600 hover:bg-lime-700" asChild>
-                  <Link href="https://www.buzzplay.pw" target="_blank">
+                  <Link href="https://www.s1.buzzplaymv.com" target="_blank">
                     Watch on web
                   </Link>
                 </Button>
