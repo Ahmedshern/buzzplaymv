@@ -204,7 +204,7 @@ export default function DashboardPage() {
                   </Link>
                 </Button>
                 <Button className="w-full bg-lime-600 hover:bg-lime-700" asChild>
-                  <Link href="https://www.s1.buzzplaymv.com" target="_blank">
+                  <Link href="https://s1.buzzplaymv.com" target="_blank">
                     Watch on web
                   </Link>
                 </Button>
