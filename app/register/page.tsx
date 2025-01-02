@@ -16,11 +16,18 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+
+  const validateMobileNumber = (number: string) => {
+    // Maldives mobile number format: +960 XXX XXXX
+    const mobileRegex = /^(?:\+960|0)?(7[0-9]{6})$/;
+    return mobileRegex.test(number);
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +37,15 @@ export default function RegisterPage() {
         variant: "destructive",
         title: "Error",
         description: "Passwords do not match",
+      });
+      return;
+    }
+
+    if (!validateMobileNumber(mobileNumber)) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a valid mobile number",
       });
       return;
     }
@@ -68,6 +84,7 @@ export default function RegisterPage() {
 
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
+        mobileNumber: mobileNumber,
         embyUserId: data.Id,
         subscriptionStatus: "inactive",
         subscriptionEnd: null,
@@ -108,7 +125,7 @@ export default function RegisterPage() {
           </div>
           <CardTitle className="text-2xl text-center">Create an account</CardTitle>
           <CardDescription className="text-center">
-            Enter your email and password below to create your account
+            Enter your details below to create your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -119,6 +136,16 @@ export default function RegisterPage() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Input
+                type="tel"
+                placeholder="Mobile Number (e.g., 7XXXXXX)"
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
                 required
                 disabled={loading}
               />
