@@ -23,12 +23,6 @@ export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const validateMobileNumber = (number: string) => {
-    // Maldives mobile number format: +960 XXX XXXX
-    const mobileRegex = /^(?:\+960|0)?(7[0-9]{6})$/;
-    return mobileRegex.test(number);
-  };
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -37,15 +31,6 @@ export default function RegisterPage() {
         variant: "destructive",
         title: "Error",
         description: "Passwords do not match",
-      });
-      return;
-    }
-
-    if (!validateMobileNumber(mobileNumber)) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter a valid mobile number",
       });
       return;
     }
