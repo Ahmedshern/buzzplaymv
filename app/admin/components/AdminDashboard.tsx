@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useUsers } from '../hooks/useUsers';
@@ -13,6 +13,7 @@ import {
   DeleteConfirmDialog,
 } from './index';
 import { toast } from 'sonner';
+import { debounce } from 'lodash';
 
 export default function AdminDashboard() {
   const { users, loading, actionLoading, fetchUsers, toggleAccess, deleteUser } = useUsers();
@@ -26,7 +27,47 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, []);
+
+  const debouncedSetSearchQuery = useMemo(
+    () => debounce((value: string) => setSearchQuery(value), 300),
+    []
+  );
+
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      const matchesSearch = user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || user.subscriptionStatus === statusFilter;
+      const matchesPlan = planFilter === 'all' || user.plan === planFilter;
+      return matchesSearch && matchesStatus && matchesPlan;
+    });
+  }, [users, searchQuery, statusFilter, planFilter]);
+
+  const uniquePlans = useMemo(() => {
+    return Array.from(
+      new Set(
+        users
+          .map(user => user.plan)
+          .filter((plan): plan is string => Boolean(plan))
+      )
+    );
+  }, [users]);
+
+  const handleSelectUser = useCallback((userId: string, checked: boolean) => {
+    setSelectedUsers(prev => {
+      const newSelected = new Set(prev);
+      if (checked) {
+        newSelected.add(userId);
+      } else {
+        newSelected.delete(userId);
+      }
+      return newSelected;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback((checked: boolean) => {
+    setSelectedUsers(checked ? new Set(filteredUsers.map(user => user.id)) : new Set());
+  }, [filteredUsers]);
 
   const handleLogout = async () => {
     try {
@@ -36,23 +77,6 @@ export default function AdminDashboard() {
       console.error('Logout error:', error);
     }
   };
-
-  // Filter users based on search and filters
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || user.subscriptionStatus === statusFilter;
-    const matchesPlan = planFilter === 'all' || user.plan === planFilter;
-    return matchesSearch && matchesStatus && matchesPlan;
-  });
-
-  // Get unique plans for filter dropdown
-  const uniquePlans = Array.from(
-    new Set(
-      users
-        .map(user => user.plan)
-        .filter((plan): plan is string => Boolean(plan))
-    )
-  );
 
   const handleDeleteUser = async (userId: string) => {
     try {
@@ -98,7 +122,7 @@ export default function AdminDashboard() {
 
         <UserFilters
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={debouncedSetSearchQuery}
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           planFilter={planFilter}
@@ -109,22 +133,8 @@ export default function AdminDashboard() {
         <UserTable
           users={filteredUsers}
           selectedUsers={selectedUsers}
-          onSelectUser={(userId, checked) => {
-            const newSelected = new Set(selectedUsers);
-            if (checked) {
-              newSelected.add(userId);
-            } else {
-              newSelected.delete(userId);
-            }
-            setSelectedUsers(newSelected);
-          }}
-          onSelectAll={(checked) => {
-            if (checked) {
-              setSelectedUsers(new Set(filteredUsers.map(user => user.id)));
-            } else {
-              setSelectedUsers(new Set());
-            }
-          }}
+          onSelectUser={handleSelectUser}
+          onSelectAll={handleSelectAll}
           onToggleAccess={toggleAccess}
           onDeleteUser={setUserToDelete}
           onViewReceipts={setSelectedUser}
