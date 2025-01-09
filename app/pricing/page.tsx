@@ -15,7 +15,6 @@ export default function PricingPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [selectedDurations, setSelectedDurations] = useState({
-    Mobile: 1,
     Basic: 1,
     Standard: 1,
     Premium: 1,
@@ -24,7 +23,6 @@ export default function PricingPage() {
   useEffect(() => {
     setMounted(true);
     setSelectedDurations({
-      Mobile: 1,
       Basic: 1,
       Standard: 1,
       Premium: 1,
@@ -120,11 +118,6 @@ export default function PricingPage() {
                     <CardHeader className="text-center pt-8 flex-none">
                       <CardTitle className="text-2xl md:text-3xl mb-2 font-semibold text-gray-900 dark:text-white">
                         {plan.name}
-                        {plan.mobileOnly && (
-                          <span className="block text-sm font-normal text-muted-foreground mt-1">
-                            Mobile & Tablet Only
-                          </span>
-                        )}
                       </CardTitle>
                       <CardDescription className="text-base mb-4 text-gray-700 dark:text-gray-300">
                         {plan.description}

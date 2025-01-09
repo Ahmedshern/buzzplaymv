@@ -1,24 +1,5 @@
 export const plans = [
   {
-    name: "Mobile",
-    price: 89,
-    description: "1 Month Package",
-    features: [
-      "Unlimited Movies & TV Shows",
-      "Ad-Free Streaming",
-      "Watch on 1 Device (Mobile or Tablet)",
-      "480p Streaming",
-      "Personalized Watchlist",
-    ],
-    deviceLimit: 1,
-    specialOffers: {
-      3: 87,
-      6: 87,
-    },
-    popular: false,
-    mobileOnly: true
-  },
-  {
     name: "Basic",
     price: 149,
     description: "1 Month Package",
