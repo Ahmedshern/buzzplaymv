@@ -127,14 +127,14 @@ export default function DashboardPage() {
                       <p className="text-sm flex items-center justify-between">
                         <span>
                           <span className="font-medium">Host:</span>{" "}
-                          <span className="text-muted-foreground">https://s1.buzzplaymv.com</span>
+                          <span className="text-muted-foreground">https://s1.box17.appboxmanager.xyz</span>
                         </span>
                         <Button
                           variant="ghost"
                           size="icon"
                           className="h-6 w-6"
                           onClick={() => {
-                            navigator.clipboard.writeText("https://s1.buzzplaymv.com");
+                            navigator.clipboard.writeText("https://s1.box17.appboxmanager.xyz");
                             toast({
                               description: "Host URL copied to clipboard",
                               duration: 2000,
